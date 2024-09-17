@@ -20,7 +20,7 @@ const CryptoBalances = () => {
       <Title>#YaCasiVenezuela</Title>
       {balances.totalUSD !== null && (
         <TotalBalance>
-          Saldo Total Recolectado: ${balances.totalUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+          Recaudado: ${balances.totalUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
         </TotalBalance>
       )}
 
