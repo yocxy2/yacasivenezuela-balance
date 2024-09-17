@@ -24,8 +24,6 @@ const CryptoBalances = () => {
         </TotalBalance>
       )}
 
-      <SocialShare />
-
       <BalanceList>
         <BalanceItem
           name="Bitcoin"
@@ -61,6 +59,7 @@ const CryptoBalances = () => {
         />
       </BalanceList>
 
+      <SocialShare />
       <Footer />
     </Container>
   );
