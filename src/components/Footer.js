@@ -2,6 +2,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import SocialShare from './SocialShare';
 
 const FooterWrapper = styled.footer`
   margin-top: auto;
@@ -28,6 +29,7 @@ const FooterText = styled.p`
 
 const Footer = () => (
   <FooterWrapper>
+  	Compartir: <br/><SocialShare />
     <FooterText>
      Desarrollado por <a href="https://x.com/kerycdiaz" target="_blank" rel="noopener noreferrer">Keryc Díaz</a>
     </FooterText>
