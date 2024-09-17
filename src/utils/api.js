@@ -44,9 +44,18 @@ export const getUSDCBalance = async (address, contractAddress, apiKey) => {
 };
 
 export const getTetherBalance = async (address) => {
-  const response = await axios.get(`https://apilist.tronscan.org/api/account?address=${address}`);
-  const usdtToken = response.data.tokens.find(
-    (token) => token.tokenId === 'Tether USD' || token.tokenId === '1002000'
-  );
-  return usdtToken ? usdtToken.balance / 1e6 : 0; // USDT tiene 6 decimales
+  try {
+    const response = await axios.get(`https://apilist.tronscan.org/api/account?address=${address}`);
+
+    const trc20Tokens = response.data.trc20token_balances || [];
+
+    const usdtToken = trc20Tokens.find(
+      (token) => token.tokenId === 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+    );
+
+    return usdtToken ? usdtToken.balance / Math.pow(10, usdtToken.tokenDecimal) : 0;
+  } catch (error) {
+    console.error('Error fetching USDT balance:', error);
+    return 0;
+  }
 };
