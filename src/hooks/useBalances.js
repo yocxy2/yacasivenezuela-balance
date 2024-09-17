@@ -13,19 +13,13 @@ import {
 } from '../utils/api';
 
 const useBalances = () => {
-  const [balances, setBalances] = useState(() => {
-    // Inicializa el estado desde localStorage si está disponible
-    const cachedBalances = localStorage.getItem('balances');
-    return cachedBalances
-      ? JSON.parse(cachedBalances)
-      : {
-          btc: null,
-          eth: null,
-          usdc: null,
-          usdt: null,
-          prices: null,
-          totalUSD: null,
-        };
+  const [balances, setBalances] = useState({
+    btc: null,
+    eth: null,
+    usdc: null,
+    usdt: null,
+    prices: null,
+    totalUSD: null,
   });
 
   useEffect(() => {
@@ -42,14 +36,27 @@ const useBalances = () => {
       const fromTimestamp = start.getTime();
 
       try {
-        // Verifica si debemos obtener nuevos datos
-        const lastFetchTime = localStorage.getItem('lastFetchTime');
-        const now = Date.now();
-        const oneMinute = 60000; // 60,000 milisegundos
+        // Verifica si estamos en el navegador
+        if (typeof window !== 'undefined') {
+          // Verifica si debemos obtener nuevos datos
+          const lastFetchTime = localStorage.getItem('lastFetchTime');
+          const now = Date.now();
+          const oneMinute = 60000; // 60,000 milisegundos
 
-        if (lastFetchTime && now - lastFetchTime < oneMinute) {
-          // Ha pasado menos de 1 minuto, no se obtienen nuevos datos
-          console.log('Usando datos en caché, ha pasado menos de 1 minuto desde la última obtención');
+          if (lastFetchTime && now - lastFetchTime < oneMinute) {
+            // Ha pasado menos de 1 minuto, no se obtienen nuevos datos
+            console.log(
+              'Usando datos en caché, ha pasado menos de 1 minuto desde la última obtención'
+            );
+            // Cargar balances desde localStorage
+            const cachedBalances = localStorage.getItem('balances');
+            if (cachedBalances) {
+              setBalances(JSON.parse(cachedBalances));
+            }
+            return;
+          }
+        } else {
+          // Si no estamos en el navegador, no hacemos nada
           return;
         }
 
@@ -122,13 +129,15 @@ const useBalances = () => {
         };
 
         // Guarda los balances actualizados y el timestamp en localStorage
-        localStorage.setItem('balances', JSON.stringify(newBalances));
-        localStorage.setItem('lastFetchTime', now.toString());
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('balances', JSON.stringify(newBalances));
+          localStorage.setItem('lastFetchTime', now.toString());
+        }
 
         setBalances(newBalances);
       } catch (error) {
         console.error('Error al obtener los balances:', error);
-        // No es necesario actualizar el estado; se usarán los balances en caché de localStorage
+        // No es necesario actualizar el estado; se usarán los balances en caché
       }
     };
 
@@ -136,7 +145,7 @@ const useBalances = () => {
     fetchBalances();
 
     // Actualiza cada 2 minutos
-    intervalId = setInterval(fetchBalances, 60500);
+    intervalId = setInterval(fetchBalances, 120000);
 
     return () => clearInterval(intervalId);
   }, []);
