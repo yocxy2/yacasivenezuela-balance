@@ -18,8 +18,7 @@ export const Container = styled.div`
 `;
 
 export const Title = styled.h1`
-  font-size: 2rem;
-  margin-bottom: 1rem;
+  font-size: 1rem;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 
   @media (min-width: 600px) {
@@ -30,10 +29,10 @@ export const Title = styled.h1`
 
 export const TotalBalance = styled.h2`
   font-size: 1.5rem;
-  margin-bottom: 1.5rem;
   color: #fff;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-
+  margin: 0 0 1rem;
+  
   @media (min-width: 600px) {
     font-size: 2rem;
   }
