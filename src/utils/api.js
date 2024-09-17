@@ -132,7 +132,6 @@ export const getERC20OutgoingTransactionsSum = async (address, contractAddress, 
       totalSent += parseFloat(tx.value);
     }
   }
-
   return totalSent / 1e6; // USDC tiene 6 decimales
 };
 

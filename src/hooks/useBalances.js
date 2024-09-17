@@ -6,9 +6,12 @@ import {
   getBitcoinTotalSent,
   getEthereumBalance,
   getUSDCBalance,
+  getEthereumOutgoingTransactionsSum,
+  getERC20OutgoingTransactionsSum,
   getTetherOutgoingTransactionsSum,
   getCryptoPrices,
   getTetherBalance,
+  getBlockNumberByTimestamp,
 } from '../utils/api';
 
 const useBalances = () => {
@@ -37,11 +40,14 @@ const useBalances = () => {
 
       try {
         // Para Ethereum, necesitamos obtener el número de bloque correspondiente a la fecha
+        const fromBlock = await getBlockNumberByTimestamp(fromTimestamp, etherscanApiKey);
 
         const [
           btcBalance,
           btcSent,
+          ethBalance,
           ethSent,
+          usdcBalance,
           usdcSent,
           usdBalance,
           usdtSent,
@@ -50,27 +56,37 @@ const useBalances = () => {
           getBitcoinBalance(btcAddress),
           getBitcoinTotalSent(btcAddress),
           getEthereumBalance(ethAddress, etherscanApiKey),
+          getEthereumOutgoingTransactionsSum(
+            ethAddress,
+            fromBlock,
+            etherscanApiKey
+          ),
           getUSDCBalance(
             ethAddress,
             '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eb48',
+            etherscanApiKey
+          ),
+          getERC20OutgoingTransactionsSum(
+            ethAddress,
+            '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eb48',
+            fromBlock,
             etherscanApiKey
           ),
           getTetherBalance(usdtAddress),
           getTetherOutgoingTransactionsSum(usdtAddress, fromTimestamp),
           getCryptoPrices(),
         ]);
-
         const btcUSD = (btcBalance + btcSent) * prices.bitcoin.usd;
-        const ethUSD = ethSent * prices.ethereum.usd;
-        const usdcUSD = usdcSent * prices['usd-coin'].usd;
+        const ethUSD = (ethBalance + ethSent) * prices.ethereum.usd;
+        const usdcUSD = (usdcBalance + usdcSent) * prices['usd-coin'].usd;
         const usdtUSD = (usdBalance + usdtSent) * prices.tether.usd;
 
         const totalUSD = btcUSD + ethUSD + usdcUSD + usdtUSD;
 
         setBalances({
           btc: (btcBalance + btcSent),
-          eth: ethSent,
-          usdc: usdcSent,
+          eth: (ethBalance + ethSent),
+          usdc: (usdcBalance + usdcSent),
           usdt: (usdBalance + usdtSent),
           prices,
           totalUSD,
