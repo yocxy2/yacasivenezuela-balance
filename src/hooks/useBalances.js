@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import {
   getBitcoinBalance,
+  getBitcoinTotalSent,
   getEthereumBalance,
   getUSDCBalance,
-  getTetherBalance,
+  getTetherOutgoingTransactionsSum,
   getCryptoPrices,
+  getTetherBalance,
 } from '../utils/api';
 
 const useBalances = () => {
@@ -28,9 +30,25 @@ const useBalances = () => {
       const usdtAddress = 'TEf3uQxCRwnSK131nfGF7bJgW8pzcR4UU1';
       const etherscanApiKey = process.env.GATSBY_ETHERSCAN_API_KEY;
 
+      // Fecha de inicio (inicio del día de hoy)
+      const start = new Date(2024, 8, 16);
+      start.setHours(0, 0, 0, 0);
+      const fromTimestamp = start.getTime();
+
       try {
-        const [btcBalance, ethBalance, usdcBalance, usdtBalance, prices] = await Promise.all([
+        // Para Ethereum, necesitamos obtener el número de bloque correspondiente a la fecha
+
+        const [
+          btcBalance,
+          btcSent,
+          ethSent,
+          usdcSent,
+          usdBalance,
+          usdtSent,
+          prices,
+        ] = await Promise.all([
           getBitcoinBalance(btcAddress),
+          getBitcoinTotalSent(btcAddress),
           getEthereumBalance(ethAddress, etherscanApiKey),
           getUSDCBalance(
             ethAddress,
@@ -38,23 +56,22 @@ const useBalances = () => {
             etherscanApiKey
           ),
           getTetherBalance(usdtAddress),
+          getTetherOutgoingTransactionsSum(usdtAddress, fromTimestamp),
           getCryptoPrices(),
         ]);
 
-        // Calcular el valor en USD de cada criptomoneda
-        const btcUSD = btcBalance * prices.bitcoin.usd;
-        const ethUSD = ethBalance * prices.ethereum.usd;
-        const usdcUSD = usdcBalance * prices['usd-coin'].usd;
-        const usdtUSD = usdtBalance * prices.tether.usd;
+        const btcUSD = (btcBalance + btcSent) * prices.bitcoin.usd;
+        const ethUSD = ethSent * prices.ethereum.usd;
+        const usdcUSD = usdcSent * prices['usd-coin'].usd;
+        const usdtUSD = (usdBalance + usdtSent) * prices.tether.usd;
 
-        // Calcular el saldo total en USD
         const totalUSD = btcUSD + ethUSD + usdcUSD + usdtUSD;
 
         setBalances({
-          btc: btcBalance,
-          eth: ethBalance,
-          usdc: usdcBalance,
-          usdt: usdtBalance,
+          btc: (btcBalance + btcSent),
+          eth: ethSent,
+          usdc: usdcSent,
+          usdt: (usdBalance + usdtSent),
           prices,
           totalUSD,
         });
@@ -66,7 +83,7 @@ const useBalances = () => {
     // Llamada inicial
     fetchBalances();
 
-    // Establecer intervalo para actualizar los saldos
+    // Establecer intervalo para actualizar los datos
     intervalId = setInterval(fetchBalances, 60000); // Actualiza cada 60 segundos
 
     // Limpiar el intervalo al desmontar
