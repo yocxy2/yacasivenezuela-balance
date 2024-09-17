@@ -18,7 +18,7 @@ const CryptoHeader = styled.div`
 `;
 
 const CryptoName = styled.h2`
-  font-size: 1.5rem;
+  font-size: 1rem;
   margin: 0;
 
   @media (min-width: 600px) {
@@ -50,14 +50,14 @@ const AmountUSD = styled.span`
 `;
 
 const Address = styled.p`
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   color: #ccc;
   margin: 0.5rem 0;
   word-wrap: break-word;
 `;
 
 const Network = styled.p`
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   color: #ccc;
   margin: 0.5rem 0;
 `;

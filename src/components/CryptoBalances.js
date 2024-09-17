@@ -1,7 +1,7 @@
 // src/components/CryptoBalances.js
 
 import React from 'react';
-import { Container, Title, BalanceList } from '../styles/styledComponents';
+import { Container, Title, BalanceList, TotalBalance } from '../styles/styledComponents';
 import useBalances from '../hooks/useBalances';
 import BalanceItem from './BalanceItem';
 
@@ -16,6 +16,11 @@ const CryptoBalances = () => {
   return (
     <Container>
       <Title>#YaCasiVenezuela</Title>
+      {balances.totalUSD !== null && (
+        <TotalBalance>
+          Saldo Total Recolectado: ${balances.totalUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+        </TotalBalance>
+      )}
       <BalanceList>
         <BalanceItem
           name="Bitcoin"

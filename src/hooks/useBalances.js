@@ -14,6 +14,7 @@ const useBalances = () => {
     usdc: null,
     usdt: null,
     prices: null,
+    totalUSD: null,
   });
 
   useEffect(() => {
@@ -36,12 +37,20 @@ const useBalances = () => {
           getCryptoPrices(),
         ]);
 
+        const btcUSD = btcBalance * prices.bitcoin.usd;
+        const ethUSD = ethBalance * prices.ethereum.usd;
+        const usdcUSD = usdcBalance * prices['usd-coin'].usd;
+        const usdtUSD = usdtBalance * prices.tether.usd;
+
+        const totalUSD = btcUSD + ethUSD + usdcUSD + usdtUSD;
+
         setBalances({
           btc: btcBalance,
           eth: ethBalance,
           usdc: usdcBalance,
           usdt: usdtBalance,
           prices,
+          totalUSD,
         });
       } catch (error) {
         console.error('Error fetching balances:', error);

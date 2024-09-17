@@ -27,6 +27,18 @@ export const Title = styled.h1`
   }
 `;
 
+
+export const TotalBalance = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #fff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+
+  @media (min-width: 600px) {
+    font-size: 2rem;
+  }
+`;
+
 export const BalanceList = styled.ul`
   list-style: none;
   padding: 0;
