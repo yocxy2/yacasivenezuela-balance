@@ -22,7 +22,7 @@ const ShareWrapper = styled.div`
 
 const SocialShare = () => {
   const shareUrl = 'https://yacasidonaciones.com';
-  const title = '#YaCasiVenezuela - Saldos de Criptomonedas';
+  const title = '#YaCasiVenezuela - Saldo Total Donado';
 
   return (
     <ShareWrapper>
