@@ -34,31 +34,50 @@ const useBalances = () => {
       const start = new Date(2024, 8, 16);
       start.setHours(0, 0, 0, 0);
       const fromTimestamp = start.getTime();
-      const now = Date.now();
+
       try {
         // Verifica si estamos en el navegador
         if (typeof window !== 'undefined') {
-          // Verifica si debemos obtener nuevos datos
-          const lastFetchTime = localStorage.getItem('lastFetchTime');
+          const now = Date.now();
           const oneMinute = 60000; // 60,000 milisegundos
 
-          if (lastFetchTime && now - lastFetchTime < oneMinute) {
-            // Ha pasado menos de 1 minuto, no se obtienen nuevos datos
-            console.log(
-              'Usando datos en caché, ha pasado menos de 1 minuto desde la última obtención'
-            );
-            // Cargar balances desde localStorage
-            const cachedBalances = localStorage.getItem('balances');
-            if (cachedBalances) {
-              setBalances(JSON.parse(cachedBalances));
+          // Obtiene lastFetchTime y balances en caché desde localStorage
+          const lastFetchTime = localStorage.getItem('lastFetchTime');
+          const cachedBalancesString = localStorage.getItem('balances');
+          const cachedBalances = cachedBalancesString ? JSON.parse(cachedBalancesString) : null;
+
+          // Función para determinar si se debe obtener datos
+          const shouldFetchData = () => {
+            if (!cachedBalances) {
+              return true; // No hay balances en caché, se debe obtener datos
             }
-            return;
+
+            // Verifica si alguno de los balances es null o 0
+            const { btc, eth, usdc, usdt } = cachedBalances;
+            return (
+              btc == null || btc === 0 ||
+              eth == null || eth === 0 ||
+              usdc == null || usdc === 0 ||
+              usdt == null || usdt === 0
+            );
+          };
+
+          if (!shouldFetchData()) {
+            // Si no es necesario obtener datos debido a balances incompletos, verifica el tiempo
+            if (lastFetchTime && now - lastFetchTime < oneMinute) {
+              // Ha pasado menos de 1 minuto, usa datos en caché
+              console.log('Usando datos en caché, ha pasado menos de 1 minuto desde la última obtención');
+              // Carga balances desde localStorage al estado
+              setBalances(cachedBalances);
+              return;
+            }
           }
         } else {
           // Si no estamos en el navegador, no hacemos nada
           return;
         }
 
+        // Procede a obtener datos
         const fromBlock = await getBlockNumberByTimestamp(
           fromTimestamp,
           etherscanApiKey
@@ -130,13 +149,13 @@ const useBalances = () => {
         // Guarda los balances actualizados y el timestamp en localStorage
         if (typeof window !== 'undefined') {
           localStorage.setItem('balances', JSON.stringify(newBalances));
-          localStorage.setItem('lastFetchTime', now.toString());
+          localStorage.setItem('lastFetchTime', Date.now().toString());
         }
 
         setBalances(newBalances);
       } catch (error) {
         console.error('Error al obtener los balances:', error);
-        // No es necesario actualizar el estado; se usarán los balances en caché
+        // Opcionalmente, puedes actualizar el estado con información del error
       }
     };
 
