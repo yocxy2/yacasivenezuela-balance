@@ -6,5 +6,8 @@ module.exports = {
     title: `Ya Casi Venezuela (Balance)`,
     siteUrl: `https://www.yourdomain.tld`,
   },
-  plugins: [],
+  plugins: [
+    `gatsby-plugin-styled-components`,
+    `babel-plugin-styled-components`,
+  ],
 }
