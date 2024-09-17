@@ -4,6 +4,8 @@ import React from 'react';
 import { Container, Title, BalanceList, TotalBalance } from '../styles/styledComponents';
 import useBalances from '../hooks/useBalances';
 import BalanceItem from './BalanceItem';
+import SocialShare from './SocialShare';
+import Footer from './Footer';
 
 const CryptoBalances = () => {
   const balances = useBalances();
@@ -21,6 +23,9 @@ const CryptoBalances = () => {
           Saldo Total Recolectado: ${balances.totalUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
         </TotalBalance>
       )}
+
+      <SocialShare />
+
       <BalanceList>
         <BalanceItem
           name="Bitcoin"
@@ -55,6 +60,8 @@ const CryptoBalances = () => {
           network="Tron (TRC20)"
         />
       </BalanceList>
+
+      <Footer />
     </Container>
   );
 };
