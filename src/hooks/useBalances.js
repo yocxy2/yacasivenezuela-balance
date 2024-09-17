@@ -1,5 +1,3 @@
-// src/hooks/useBalances.js
-
 import { useEffect, useState } from 'react';
 import {
   getBitcoinBalance,
@@ -15,13 +13,19 @@ import {
 } from '../utils/api';
 
 const useBalances = () => {
-  const [balances, setBalances] = useState({
-    btc: null,
-    eth: null,
-    usdc: null,
-    usdt: null,
-    prices: null,
-    totalUSD: null,
+  const [balances, setBalances] = useState(() => {
+    // Inicializa el estado desde localStorage si está disponible
+    const cachedBalances = localStorage.getItem('balances');
+    return cachedBalances
+      ? JSON.parse(cachedBalances)
+      : {
+          btc: null,
+          eth: null,
+          usdc: null,
+          usdt: null,
+          prices: null,
+          totalUSD: null,
+        };
   });
 
   useEffect(() => {
@@ -33,15 +37,28 @@ const useBalances = () => {
       const usdtAddress = 'TEf3uQxCRwnSK131nfGF7bJgW8pzcR4UU1';
       const etherscanApiKey = process.env.GATSBY_ETHERSCAN_API_KEY;
 
-      // Fecha de inicio (inicio del día de hoy)
       const start = new Date(2024, 8, 16);
       start.setHours(0, 0, 0, 0);
       const fromTimestamp = start.getTime();
 
       try {
-        // Para Ethereum, necesitamos obtener el número de bloque correspondiente a la fecha
-        const fromBlock = await getBlockNumberByTimestamp(fromTimestamp, etherscanApiKey);
+        // Verifica si debemos obtener nuevos datos
+        const lastFetchTime = localStorage.getItem('lastFetchTime');
+        const now = Date.now();
+        const oneMinute = 60000; // 60,000 milisegundos
 
+        if (lastFetchTime && now - lastFetchTime < oneMinute) {
+          // Ha pasado menos de 1 minuto, no se obtienen nuevos datos
+          console.log('Usando datos en caché, ha pasado menos de 1 minuto desde la última obtención');
+          return;
+        }
+
+        const fromBlock = await getBlockNumberByTimestamp(
+          fromTimestamp,
+          etherscanApiKey
+        );
+
+        // Obtiene los datos en paralelo
         const [
           btcBalance,
           btcSent,
@@ -76,33 +93,51 @@ const useBalances = () => {
           getTetherOutgoingTransactionsSum(usdtAddress, fromTimestamp),
           getCryptoPrices(),
         ]);
-        const btcUSD = (btcBalance + btcSent) * prices.bitcoin.usd;
-        const ethUSD = (ethBalance + ethSent) * prices.ethereum.usd;
-        const usdcUSD = (usdcBalance + usdcSent) * prices['usd-coin'].usd;
-        const usdtUSD = (usdBalance + usdtSent) * prices.tether.usd;
+
+        // Calcula los totales
+        const btcTotal = btcBalance + btcSent;
+        const ethTotal = ethBalance + ethSent;
+        const usdcTotal = usdcBalance + usdcSent;
+        const usdtTotal = usdBalance + usdtSent;
+
+        const btcPrice = prices?.bitcoin?.usd ?? 0;
+        const ethPrice = prices?.ethereum?.usd ?? 0;
+        const usdcPrice = prices?.['usd-coin']?.usd ?? 0;
+        const usdtPrice = prices?.tether?.usd ?? 0;
+
+        const btcUSD = btcTotal * btcPrice;
+        const ethUSD = ethTotal * ethPrice;
+        const usdcUSD = usdcTotal * usdcPrice;
+        const usdtUSD = usdtTotal * usdtPrice;
 
         const totalUSD = btcUSD + ethUSD + usdcUSD + usdtUSD;
 
-        setBalances({
-          btc: (btcBalance + btcSent),
-          eth: (ethBalance + ethSent),
-          usdc: (usdcBalance + usdcSent),
-          usdt: (usdBalance + usdtSent),
+        const newBalances = {
+          btc: btcTotal,
+          eth: ethTotal,
+          usdc: usdcTotal,
+          usdt: usdtTotal,
           prices,
           totalUSD,
-        });
+        };
+
+        // Guarda los balances actualizados y el timestamp en localStorage
+        localStorage.setItem('balances', JSON.stringify(newBalances));
+        localStorage.setItem('lastFetchTime', now.toString());
+
+        setBalances(newBalances);
       } catch (error) {
-        console.error('Error fetching balances:', error);
+        console.error('Error al obtener los balances:', error);
+        // No es necesario actualizar el estado; se usarán los balances en caché de localStorage
       }
     };
 
     // Llamada inicial
     fetchBalances();
 
-    // Establecer intervalo para actualizar los datos
-    intervalId = setInterval(fetchBalances, 60000); // Actualiza cada 60 segundos
+    // Actualiza cada 2 minutos
+    intervalId = setInterval(fetchBalances, 60500);
 
-    // Limpiar el intervalo al desmontar
     return () => clearInterval(intervalId);
   }, []);
 
@@ -110,4 +145,5 @@ const useBalances = () => {
 };
 
 export default useBalances;
+
 

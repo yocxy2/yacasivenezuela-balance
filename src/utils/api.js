@@ -1,7 +1,15 @@
 import axios from 'axios';
 
+// Configuración de Axios para reintentos y timeout
+const axiosInstance = axios.create({
+  timeout: 5000, // Timeout de 5 segundos
+  retry: 3, // Intentos de reintento
+  retryDelay: (retryCount) => retryCount * 1000, // Esperar 1 segundo más en cada intento
+});
+
+// Función para obtener los precios de las criptomonedas
 export const getCryptoPrices = async () => {
-  const response = await axios.get(
+  const { data } = await axiosInstance.get(
     'https://api.coingecko.com/api/v3/simple/price',
     {
       params: {
@@ -10,16 +18,20 @@ export const getCryptoPrices = async () => {
       },
     }
   );
-  return response.data;
+  return data;
 };
 
+// Función para obtener balance de Bitcoin
 export const getBitcoinBalance = async (address) => {
-  const response = await axios.get(`https://blockchain.info/q/addressbalance/${address}`);
-  return response.data / 1e8; // Convertir satoshis a BTC
+  const { data } = await axiosInstance.get(
+    `https://blockchain.info/q/addressbalance/${address}`
+  );
+  return data / 1e8; // Convertir satoshis a BTC
 };
 
+// Función para obtener balance de Ethereum
 export const getEthereumBalance = async (address, apiKey) => {
-  const response = await axios.get(`https://api.etherscan.io/api`, {
+  const { data } = await axiosInstance.get('https://api.etherscan.io/api', {
     params: {
       module: 'account',
       action: 'balance',
@@ -27,11 +39,12 @@ export const getEthereumBalance = async (address, apiKey) => {
       apikey: apiKey,
     },
   });
-  return response.data.result / 1e18; // Convertir Wei a ETH
+  return data.result / 1e18; // Convertir Wei a ETH
 };
 
+// Función para obtener balance de USDC
 export const getUSDCBalance = async (address, contractAddress, apiKey) => {
-  const response = await axios.get(`https://api.etherscan.io/api`, {
+  const { data } = await axiosInstance.get('https://api.etherscan.io/api', {
     params: {
       module: 'account',
       action: 'tokenbalance',
@@ -40,19 +53,18 @@ export const getUSDCBalance = async (address, contractAddress, apiKey) => {
       apikey: apiKey,
     },
   });
-  return response.data.result / 1e6; // USDC tiene 6 decimales
+  return data.result / 1e6; // USDC tiene 6 decimales
 };
 
+// Función para obtener balance de USDT (Tether)
 export const getTetherBalance = async (address) => {
   try {
-    const response = await axios.get(`https://apilist.tronscan.org/api/account?address=${address}`);
-
-    const trc20Tokens = response.data.trc20token_balances || [];
-
-    const usdtToken = trc20Tokens.find(
+    const { data } = await axiosInstance.get(
+      `https://apilist.tronscan.org/api/account?address=${address}`
+    );
+    const usdtToken = data.trc20token_balances?.find(
       (token) => token.tokenId === 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
     );
-
     return usdtToken ? usdtToken.balance / Math.pow(10, usdtToken.tokenDecimal) : 0;
   } catch (error) {
     console.error('Error fetching USDT balance:', error);
@@ -60,8 +72,9 @@ export const getTetherBalance = async (address) => {
   }
 };
 
+// Obtener el número de bloque por timestamp
 export const getBlockNumberByTimestamp = async (timestamp, apiKey) => {
-  const response = await axios.get(`https://api.etherscan.io/api`, {
+  const { data } = await axiosInstance.get('https://api.etherscan.io/api', {
     params: {
       module: 'block',
       action: 'getblocknobytime',
@@ -70,8 +83,7 @@ export const getBlockNumberByTimestamp = async (timestamp, apiKey) => {
       apikey: apiKey,
     },
   });
-
-  return response.data.result;
+  return data.result;
 };
 
 export const getBitcoinTotalSent = async (address) => {
@@ -82,6 +94,7 @@ export const getBitcoinTotalSent = async (address) => {
   return totalSent - 0.06152176;
 
 };
+
 
 export const getEthereumOutgoingTransactionsSum = async (address, fromBlock, apiKey) => {
   let totalSent = 0;
@@ -101,9 +114,14 @@ export const getEthereumOutgoingTransactionsSum = async (address, fromBlock, api
 
 
   for (const tx of transactions) {
-    if (tx.from.toLowerCase() === address.toLowerCase()) {
-      totalSent += parseFloat(tx.value);
+    try{
+      if (tx.from !== undefined && tx.from.toLowerCase() === address.toLowerCase()) {
+        totalSent += parseFloat(tx.value);
+      }
+    } catch{
+      console.log("Error getEthereumOutgoingTransactionsSum")
     }
+    
   }
 
   return totalSent / 1e18; // Convertir Wei a ETH
@@ -128,9 +146,14 @@ export const getERC20OutgoingTransactionsSum = async (address, contractAddress, 
   const transactions = response.data.result;
 
   for (const tx of transactions) {
-    if (tx.from.toLowerCase() === address.toLowerCase()) {
-      totalSent += parseFloat(tx.value);
+    try{
+      if (tx.from !== undefined && tx.from.toLowerCase() === address.toLowerCase()) {
+        totalSent += parseFloat(tx.value);
+      }
+    } catch{
+      console.log("Error getERC20OutgoingTransactionsSum")
     }
+    
   }
   return totalSent / 1e6; // USDC tiene 6 decimales
 };
