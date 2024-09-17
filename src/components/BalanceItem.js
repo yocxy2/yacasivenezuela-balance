@@ -6,7 +6,7 @@ import styled from 'styled-components';
 const BalanceItemWrapper = styled.li`
   background: rgba(0, 0, 0, 0.7);
   margin-bottom: 1rem;
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 10px;
   text-align: left;
 `;
@@ -40,13 +40,13 @@ const BalanceInfo = styled.div`
 `;
 
 const BalanceAmount = styled.p`
-  font-size: 1.2rem;
+  font-size: 0.8rem;
   margin: 0.5rem 0;
 `;
 
 const AmountUSD = styled.span`
-  font-size: 1rem;
-  color: #ddd;
+  font-size: 1.2rem;
+  color: #fff;
 `;
 
 const Address = styled.p`
@@ -74,7 +74,7 @@ const BalanceItem = ({ name, symbol, balance, price, address, network }) => (
       </BalanceAmount>
       {price && balance !== null && (
         <AmountUSD>
-          Valor aproximado: ${Number(balance * price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+          Saldo en USD: ${Number(balance * price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
         </AmountUSD>
       )}
       {address && (
