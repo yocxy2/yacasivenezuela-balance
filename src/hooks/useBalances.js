@@ -34,13 +34,12 @@ const useBalances = () => {
       const start = new Date(2024, 8, 16);
       start.setHours(0, 0, 0, 0);
       const fromTimestamp = start.getTime();
-
+      const now = Date.now();
       try {
         // Verifica si estamos en el navegador
         if (typeof window !== 'undefined') {
           // Verifica si debemos obtener nuevos datos
           const lastFetchTime = localStorage.getItem('lastFetchTime');
-          const now = Date.now();
           const oneMinute = 60000; // 60,000 milisegundos
 
           if (lastFetchTime && now - lastFetchTime < oneMinute) {
