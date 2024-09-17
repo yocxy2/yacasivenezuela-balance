@@ -1,3 +1,5 @@
+// src/components/CryptoBalances.js
+
 import React from 'react';
 import { Container, Title, BalanceList } from '../styles/styledComponents';
 import useBalances from '../hooks/useBalances';
@@ -53,3 +55,5 @@ const CryptoBalances = () => {
 };
 
 export default CryptoBalances;
+
+
